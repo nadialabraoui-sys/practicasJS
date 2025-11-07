@@ -1,47 +1,84 @@
 const nuevaTareaBtn = document.getElementsByClassName("botonAniadir")[0];
+let tareasGuardadas;
 
+// 1️⃣ Al cargar la página, mostramos las tareas guardadas
+document.addEventListener("DOMContentLoaded", function (event) {
+  if (JSON.parse(localStorage.getItem("tareas"))) {
+    tareasGuardadas = JSON.parse(localStorage.getItem("tareas"));
+  } else {
+    tareasGuardadas = [];
+  }
+  //se crea el div principal si no existe
+  let contenedorTareas = document.getElementById("contenedorTareas");
+  if (!contenedorTareas) {
+    contenedorTareas = document.createElement("div");
+    contenedorTareas.id = "contenedorTareas";
+    document.body.appendChild(contenedorTareas);
+  }
+});
 nuevaTareaBtn.addEventListener("click", function (event) {
   event.preventDefault();
-  const contenedorTareas = document.createElement("div");
-  contenedorTareas.id = "contenedorTareas";
-  document.body.appendChild(contenedorTareas);
+
   agregarTarea(contenedorTareas);
 });
 
 function agregarTarea(contenedorTareas) {
-  //aniadir titulo (por defecto de momento)
-  const newTask = document.createElement("label");
-  newTask.textContent = "Nueva Tarea: ";
-  contenedorTareas.appendChild(newTask);
+  //añadir contenedor de cada tarea
+  const tareaDiv = document.createElement("div");
+  tareaDiv.className = "tareaDiv";
+  contenedorTareas.appendChild(tareaDiv);
 
-  //aniadir contenido
+  //Etiqueta de tarea
+  const tareaLabel = document.createElement("label");
+  tareaLabel.textContent = "Nueva Tarea: ";
+  tareaDiv.appendChild(tareaLabel);
+  //añadir contenido por input
+
   const taskContent = document.createElement("input");
   taskContent.type = "text";
   taskContent.placeholder = "Descripción de la tarea";
   taskContent.className = "taskContent";
-  newTask.appendChild(taskContent);
+  tareaLabel.appendChild(taskContent);
 
-  //guardar
+  //guardar el contenido al pulsar fuera del input
   taskContent.addEventListener("change", function (event) {
-    if (taskContent.value === "") return;
+    //si está vacio, no se guarda nada
+    if (taskContent.value.trim() === "") return;
 
     const tareaGuardada = document.createElement("p");
     tareaGuardada.textContent = taskContent.value;
     //se reemplaza el input por el p con la tarea guardada
-    newTask.replaceChild(tareaGuardada, taskContent);
-    botonEditar(newTask, tareaGuardada);
-  });
-}
+    tareaLabel.replaceChild(tareaGuardada, taskContent);
 
-function botonEditar(newTask, tareaGuardada) {
-  const btnEdit = document.createElement("input");
-  btnEdit.type = "button";
-  btnEdit.value = "✍";
-  btnEdit.id = "btnEdit";
-  tareaGuardada.appendChild(btnEdit);
+    const btnEditar = document.createElement("input");
+    btnEditar.type = "button";
+    btnEditar.value = "Editar";
+    btnEditar.className = "botonEditar";
 
-  //crear evento
-  btnEdit.addEventListener("click", function (event) {
-    event.preventDefault();
+    tareaDiv.appendChild(btnEditar);
+
+    btnEditar.addEventListener("click", function () {
+      const inputEditado = document.createElement("input");
+      tareaLabel.replaceChild(inputEditado, tareaGuardada);
+      inputEditado.focus();
+
+      inputEditado.addEventListener("change", function (event) {
+        if (inputEditado.value.trim() === "") return;
+        tareaGuardada.textContent = inputEditado.value;
+        tareaLabel.replaceChild(tareaGuardada, inputEditado);
+      });
+    });
+    //crear boton eliminar
+    const botonEliminar = document.createElement("input");
+
+    botonEliminar.type = "button";
+    botonEliminar.className = "botonEliminar";
+    botonEliminar.value = "Eliminar";
+    tareaDiv.appendChild(botonEliminar);
+
+    botonEliminar.addEventListener("click", function (event) {
+      event.preventDefault();
+      contenedorTareas.removeChild(tareaDiv);
+    });
   });
 }
